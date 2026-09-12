@@ -10,7 +10,6 @@ import '../data/checklist_repository.dart';
 import '../data/checklist_template.dart';
 import '../db/database_helper.dart';
 import '../models/checklist_item_reponse.dart';
-import '../models/photo_visite.dart';
 import '../models/visite.dart';
 
 class RapportPdfService {
