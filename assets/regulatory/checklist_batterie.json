@@ -1,0 +1,73 @@
+{
+  "type": "batterie",
+  "version": "1.0",
+  "disclaimer": "Modèle de checklist indicatif, non contractuel. Les systèmes de stockage d'énergie par batteries (BESS) peuvent relever de la réglementation ICPE (notamment rubrique liée au stockage de batteries lithium) selon la capacité énergétique installée : les seuils de déclaration/enregistrement/autorisation doivent être vérifiés au cas par cas. Les distances d'éloignement, exigences de ventilation et de détection incendie doivent être confirmées auprès du SDIS territorialement compétent, du bureau de contrôle, du fabricant (fiche de sécurité / notice DICT) et des textes en vigueur applicables au moment de la visite. Toutes les valeurs numériques sont modifiables dans les Réglages de l'application.",
+  "references_a_verifier": [
+    "Nomenclature ICPE - rubrique relative au stockage de batteries lithium (seuils en kg équivalent lithium selon la capacité)",
+    "Arrêtés ministériels/préfectoraux applicables aux installations de stockage d'énergie par batteries (BESS)",
+    "Fiche de sécurité et notice d'installation du fabricant de la batterie",
+    "Référentiel du SDIS local (distances d'éloignement, accès, moyens de secours)",
+    "Norme UTE C15-712-3 (installations PV avec stockage)"
+  ],
+  "sections": [
+    {
+      "id": "identification",
+      "titre": "Identification du système de stockage",
+      "items": [
+        { "id": "bat_technologie", "label": "Technologie de batterie", "type": "choix", "options": ["Lithium-ion (LFP)", "Lithium-ion (NMC)", "Plomb", "Autre / inconnue"] },
+        { "id": "bat_capacite_energie", "label": "Capacité énergétique totale", "type": "nombre", "unite": "kWh" },
+        { "id": "bat_tension", "label": "Tension du système", "type": "nombre", "unite": "V" },
+        { "id": "bat_localisation", "label": "Emplacement", "type": "choix", "options": ["Local technique dédié intérieur", "Local extérieur / container", "Garage", "Autre pièce du bâtiment"] }
+      ]
+    },
+    {
+      "id": "local_confinement",
+      "titre": "Local et confinement",
+      "items": [
+        { "id": "bat_local_dedie", "label": "Local dédié exclusivement au stockage d'énergie", "type": "case" },
+        { "id": "bat_degre_coupe_feu", "label": "Degré coupe-feu des parois du local", "type": "texte", "a_verifier": true },
+        { "id": "bat_porte_coupe_feu", "label": "Porte coupe-feu à fermeture automatique", "type": "case", "a_verifier": true },
+        { "id": "bat_retention_ecoulement", "label": "Dispositif de rétention en cas d'écoulement d'électrolyte", "type": "case" }
+      ]
+    },
+    {
+      "id": "distances_eloignement",
+      "titre": "Distances d'éloignement",
+      "items": [
+        { "id": "bat_distance_habitation", "label": "Distance par rapport à l'habitation / bâtiment occupé", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "bat_distance_limite_propriete", "label": "Distance par rapport aux limites de propriété", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "bat_distance_matieres_combustibles", "label": "Distance par rapport aux matières/matériaux combustibles stockés", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "bat_distance_vehicules", "label": "Distance par rapport aux places de stationnement véhicules", "type": "nombre", "unite": "m", "a_verifier": true }
+      ]
+    },
+    {
+      "id": "ventilation_detection",
+      "titre": "Ventilation et détection",
+      "items": [
+        { "id": "bat_ventilation_naturelle", "label": "Ventilation naturelle ou mécanique du local", "type": "case" },
+        { "id": "bat_detection_incendie", "label": "Détection incendie / fumée présente", "type": "case" },
+        { "id": "bat_detection_gaz", "label": "Détection de gaz / dégagement gazeux (si applicable)", "type": "case", "a_verifier": true },
+        { "id": "bat_report_alarme", "label": "Report d'alarme vers un point surveillé", "type": "case" }
+      ]
+    },
+    {
+      "id": "coupure_urgence",
+      "titre": "Coupure d'urgence et accès secours",
+      "items": [
+        { "id": "bat_coupure_accessible", "label": "Dispositif de coupure accessible depuis l'extérieur", "type": "case" },
+        { "id": "bat_signalisation_danger", "label": "Signalétique danger électrique / batterie apposée", "type": "case" },
+        { "id": "bat_acces_engins_secours", "label": "Accès dégagé pour les engins de secours", "type": "case" },
+        { "id": "bat_moyen_extinction", "label": "Moyen d'extinction adapté à proximité (type et classe vérifiés selon notice fabricant)", "type": "case", "a_verifier": true }
+      ]
+    },
+    {
+      "id": "icpe",
+      "titre": "Statut réglementaire ICPE (si applicable)",
+      "items": [
+        { "id": "bat_soumis_icpe", "label": "Installation potentiellement soumise à la nomenclature ICPE (à vérifier selon capacité)", "type": "case", "a_verifier": true },
+        { "id": "bat_regime_icpe", "label": "Régime ICPE identifié", "type": "choix", "options": ["Non applicable", "Déclaration", "Enregistrement", "Autorisation", "À vérifier"] },
+        { "id": "bat_dossier_transmis", "label": "Dossier réglementaire transmis à l'autorité compétente si requis", "type": "case" }
+      ]
+    }
+  ]
+}

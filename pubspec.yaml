@@ -1,0 +1,48 @@
+name: visite_pv
+description: "Application de visites techniques photovoltaïque et batterie (BESS)"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+  # Stockage local
+  sqflite: ^2.3.3
+  path_provider: ^2.1.3
+  path: ^1.9.0
+
+  # Photos / caméra
+  image_picker: ^1.1.2
+
+  # Géolocalisation
+  geolocator: ^12.0.0
+
+  # PDF
+  pdf: ^3.11.0
+  printing: ^5.13.1
+
+  # Utilitaires
+  uuid: ^4.4.0
+  intl: ^0.19.0
+  share_plus: ^9.0.0
+  file_picker: ^8.0.5
+  flutter_riverpod: ^2.5.1
+  google_fonts: ^6.2.1
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/regulatory/checklist_pv.json
+    - assets/regulatory/checklist_batterie.json

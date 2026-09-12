@@ -1,0 +1,72 @@
+{
+  "type": "photovoltaique",
+  "version": "1.0",
+  "disclaimer": "Modèle de checklist indicatif, non contractuel. Les distances, valeurs et exigences doivent être vérifiées avant chaque visite auprès du SDIS territorialement compétent, du bureau de contrôle et des textes en vigueur (arrêtés préfectoraux ICPE le cas échéant, guides UTE C15-712-1/2/3, DTU 40.35/40.36, réglementation incendie ERP/habitation applicable au bâtiment). Toutes les valeurs numériques sont modifiables dans les Réglages de l'application.",
+  "references_a_verifier": [
+    "Guide UTE C15-712-1 (installations PV raccordées au réseau BT)",
+    "DTU 40.35 / 40.36 (étanchéité toitures et supports PV)",
+    "Référentiel du SDIS local (voies d'accès, chemins de circulation, DUS)",
+    "Réglementation incendie applicable au bâtiment (ERP, habitation, ICPE selon usage)",
+    "Guide pratique photovoltaïque et sécurité incendie (SDIS / CNPP)"
+  ],
+  "sections": [
+    {
+      "id": "identification",
+      "titre": "Identification de l'installation",
+      "items": [
+        { "id": "pv_type_toiture", "label": "Type d'implantation", "type": "choix", "options": ["Toiture bâtiment", "Ombrière / parking", "Sol (champ PV)", "Façade / autre"] },
+        { "id": "pv_puissance_crete", "label": "Puissance crête installée", "type": "nombre", "unite": "kWc" },
+        { "id": "pv_surface", "label": "Surface totale de panneaux", "type": "nombre", "unite": "m²" },
+        { "id": "pv_nb_onduleurs", "label": "Nombre d'onduleurs", "type": "nombre", "unite": "" }
+      ]
+    },
+    {
+      "id": "acces_voies",
+      "titre": "Accès et voies pompiers",
+      "items": [
+        { "id": "pv_largeur_voie_engin", "label": "Largeur de la voie engins jusqu'au bâtiment", "type": "nombre", "unite": "m", "valeur_indicative": 3.0, "a_verifier": true },
+        { "id": "pv_aire_retournement", "label": "Aire de retournement / mise en station présente", "type": "case", "a_verifier": true },
+        { "id": "pv_acces_toiture", "label": "Accès toiture identifié et dégagé pour intervention", "type": "case" }
+      ]
+    },
+    {
+      "id": "coupure_urgence",
+      "titre": "Dispositif de coupure d'urgence (DUS)",
+      "items": [
+        { "id": "pv_dus_present", "label": "Coffret DUS / mise hors tension présent", "type": "case" },
+        { "id": "pv_dus_accessible_exterieur", "label": "DUS accessible depuis l'extérieur du bâtiment", "type": "case" },
+        { "id": "pv_dus_signalise", "label": "Signalétique DUS conforme et visible", "type": "case" },
+        { "id": "pv_coffret_verrouillable", "label": "Coffret verrouillable / protégé des intempéries", "type": "case" }
+      ]
+    },
+    {
+      "id": "distances_compartimentage",
+      "titre": "Distances et compartimentage toiture",
+      "items": [
+        { "id": "pv_distance_limite_toiture", "label": "Distance des panneaux par rapport aux limites de la toiture / acrotères", "type": "nombre", "unite": "m", "valeur_indicative": 1.0, "a_verifier": true },
+        { "id": "pv_zone_desenfumage", "label": "Dégagement autour des exutoires de désenfumage / lanterneaux", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "pv_chemin_circulation", "label": "Chemin de circulation sur toiture entre rangées de panneaux", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "pv_recoupement_zones", "label": "Recoupement en zones si grande toiture (le cas échéant)", "type": "case" }
+      ]
+    },
+    {
+      "id": "electrique",
+      "titre": "Installation électrique",
+      "items": [
+        { "id": "pv_cablage_protege", "label": "Câblages DC protégés / cheminement identifié", "type": "case" },
+        { "id": "pv_mise_a_la_terre", "label": "Mise à la terre / équipotentialité conforme", "type": "case" },
+        { "id": "pv_protection_surtension", "label": "Protection contre les surtensions (parafoudre)", "type": "case" },
+        { "id": "pv_etiquetage_circuits", "label": "Étiquetage des circuits et coffrets", "type": "case" }
+      ]
+    },
+    {
+      "id": "environnement_sol",
+      "titre": "Environnement (installation au sol uniquement)",
+      "items": [
+        { "id": "pv_distance_cloture_tiers", "label": "Distance clôture / installation par rapport aux tiers", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "pv_debroussaillement", "label": "Débroussaillement / entretien de la végétation réalisé", "type": "case" },
+        { "id": "pv_portail_acces_engins", "label": "Portail d'accès dimensionné pour engins de secours", "type": "case" }
+      ]
+    }
+  ]
+}
