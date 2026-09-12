@@ -78,6 +78,7 @@ Prérequis : [Flutter SDK](https://docs.flutter.dev/get-started/install) install
 ```bash
 flutter create --platforms=android --org com.motovisite .
 python3 scripts/patch_android_manifest.py
+python3 scripts/patch_android_build_gradle.py
 flutter pub get
 flutter build apk --release
 ```

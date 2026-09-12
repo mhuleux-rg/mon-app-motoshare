@@ -24,7 +24,7 @@ dependencies:
 
   # PDF
   pdf: ^3.11.0
-  printing: ^5.13.1
+  printing: ^5.15.0
 
   # Utilitaires
   uuid: ^4.4.0
