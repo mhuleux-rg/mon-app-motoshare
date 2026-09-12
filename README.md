@@ -76,12 +76,34 @@ Prérequis : [Flutter SDK](https://docs.flutter.dev/get-started/install) install
 `flutter doctor` sans erreur bloquante pour Android.
 
 ```bash
+mkdir -p ~/.android && cp ci/debug.keystore ~/.android/debug.keystore
 flutter create --platforms=android --org com.motovisite .
 python3 scripts/patch_android_manifest.py
 python3 scripts/patch_android_build_gradle.py
 flutter pub get
 flutter build apk --release
 ```
+
+### Pourquoi une clé de signature dédiée (`ci/debug.keystore`) ?
+
+Par défaut, `flutter build apk --release` signe l'APK avec une clé de debug
+générée automatiquement, différente à chaque environnement (chaque run
+GitHub Actions repart d'une machine vierge). Résultat : deux APK compilés
+sur deux runs différents ont des signatures différentes, et Android refuse
+d'installer une nouvelle version par-dessus une ancienne
+("le package est en conflit avec un package déjà présent").
+
+Le fichier `ci/debug.keystore` (committé dans le dépôt, ce qui est normal
+pour une clé de debug/distribution interne, à ne jamais faire pour une clé
+de production Play Store) est copié à l'emplacement standard avant la
+compilation, afin que **toutes les APK générées soient signées à
+l'identique** et puissent se mettre à jour les unes les autres sans
+désinstallation préalable.
+
+Si vous avez installé une version de l'app compilée *avant* l'introduction
+de cette clé stable, désinstallez-la une fois avant d'installer une
+nouvelle build : les versions suivantes s'installeront ensuite par-dessus
+sans problème.
 
 L'APK se trouve ensuite dans `build/app/outputs/flutter-apk/app-release.apk`, à
 copier sur le téléphone pour installation.

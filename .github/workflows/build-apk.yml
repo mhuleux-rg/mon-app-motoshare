@@ -25,6 +25,11 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Installer une clé de signature debug stable
+        run: |
+          mkdir -p ~/.android
+          cp ci/debug.keystore ~/.android/debug.keystore
+
       - name: Générer les dossiers Android (gradle, manifest, etc.)
         run: flutter create --platforms=android --org com.motovisite .
 
