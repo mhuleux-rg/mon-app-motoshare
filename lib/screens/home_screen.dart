@@ -4,7 +4,9 @@ import 'package:uuid/uuid.dart';
 
 import '../data/settings_service.dart';
 import '../db/database_helper.dart';
+import '../models/client.dart';
 import '../models/visite.dart';
+import 'clients_screen.dart';
 import 'settings_screen.dart';
 import 'visite_detail_screen.dart';
 
@@ -18,6 +20,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Visite>> _futureVisites;
   final _dateFormat = DateFormat('dd/MM/yyyy');
+  final _rechercheController = TextEditingController();
+  String _recherche = '';
 
   @override
   void initState() {
@@ -27,11 +31,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _reload() {
     setState(() {
-      _futureVisites = DatabaseHelper.instance.getVisites();
+      _futureVisites = DatabaseHelper.instance.getVisites(recherche: _recherche);
     });
   }
 
+  Future<Client?> _choisirClientExistant() async {
+    final clients = await DatabaseHelper.instance.getClients();
+    if (clients.isEmpty) return null;
+    return showDialog<Client>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choisir un client existant'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: clients.length,
+            itemBuilder: (context, index) {
+              final client = clients[index];
+              return ListTile(
+                title: Text(client.nom),
+                subtitle: Text(client.adresse, maxLines: 1, overflow: TextOverflow.ellipsis),
+                onTap: () => Navigator.pop(context, client),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+        ],
+      ),
+    );
+  }
+
   Future<void> _creerVisite() async {
+    String? clientIdSelectionne;
     final clientController = TextEditingController();
     final adresseController = TextEditingController();
     TypeInstallation type = TypeInstallation.photovoltaique;
@@ -50,9 +84,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () async {
+                          final client = await _choisirClientExistant();
+                          if (client != null) {
+                            clientController.text = client.nom;
+                            adresseController.text = client.adresse;
+                            setStateDialog(() => clientIdSelectionne = client.id);
+                          }
+                        },
+                        icon: const Icon(Icons.people_outline, size: 18),
+                        label: const Text('Choisir un client existant'),
+                      ),
+                    ),
                     TextField(
                       controller: clientController,
                       decoration: const InputDecoration(labelText: 'Client'),
+                      onChanged: (_) => clientIdSelectionne = null,
                     ),
                     TextField(
                       controller: adresseController,
@@ -115,6 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final visite = Visite(
       id: const Uuid().v4(),
+      clientId: clientIdSelectionne,
       client: clientController.text.trim(),
       adresse: adresseController.text.trim(),
       type: type,
@@ -174,6 +225,17 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Visites PV & Batterie'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.people_outline),
+            tooltip: 'Clients',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ClientsScreen()),
+              );
+              _reload();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () async {
               await Navigator.push(
@@ -185,15 +247,42 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 4),
         ],
       ),
-      body: FutureBuilder<List<Visite>>(
-        future: _futureVisites,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final visites = snapshot.data!;
-          if (visites.isEmpty) {
-            return Center(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+            child: TextField(
+              controller: _rechercheController,
+              decoration: InputDecoration(
+                hintText: 'Rechercher client ou adresse...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _recherche.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _rechercheController.clear();
+                          _recherche = '';
+                          _reload();
+                        },
+                      )
+                    : null,
+              ),
+              onChanged: (v) {
+                _recherche = v;
+                _reload();
+              },
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Visite>>(
+              future: _futureVisites,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final visites = snapshot.data!;
+                if (visites.isEmpty) {
+                  return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -307,7 +396,10 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           );
-        },
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _creerVisite,

@@ -9,6 +9,7 @@ TypeInstallation typeInstallationFromString(String value) {
 
 class Visite {
   final String id;
+  String? clientId;
   String client;
   String adresse;
   double? latitude;
@@ -21,6 +22,7 @@ class Visite {
 
   Visite({
     required this.id,
+    this.clientId,
     required this.client,
     required this.adresse,
     this.latitude,
@@ -35,6 +37,7 @@ class Visite {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'clientId': clientId,
       'client': client,
       'adresse': adresse,
       'latitude': latitude,
@@ -50,6 +53,7 @@ class Visite {
   factory Visite.fromMap(Map<String, dynamic> map) {
     return Visite(
       id: map['id'] as String,
+      clientId: map['clientId'] as String?,
       client: map['client'] as String,
       adresse: map['adresse'] as String,
       latitude: map['latitude'] as double?,

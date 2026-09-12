@@ -2,6 +2,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/checklist_item_reponse.dart';
+import '../models/client.dart';
 import '../models/photo_visite.dart';
 import '../models/visite.dart';
 
@@ -21,7 +22,7 @@ class DatabaseHelper {
     final path = join(dbPath, 'visite_pv.db');
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -31,12 +32,40 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await db.execute("ALTER TABLE photos ADD COLUMN type TEXT NOT NULL DEFAULT 'photo'");
     }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE clients (
+          id TEXT PRIMARY KEY,
+          nom TEXT NOT NULL,
+          adresse TEXT NOT NULL,
+          telephone TEXT,
+          email TEXT,
+          notes TEXT,
+          dateCreation TEXT NOT NULL
+        )
+      ''');
+      await db.execute('ALTER TABLE visites ADD COLUMN clientId TEXT');
+      await db.execute('CREATE INDEX idx_visites_client ON visites (clientId)');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
+      CREATE TABLE clients (
+        id TEXT PRIMARY KEY,
+        nom TEXT NOT NULL,
+        adresse TEXT NOT NULL,
+        telephone TEXT,
+        email TEXT,
+        notes TEXT,
+        dateCreation TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE visites (
         id TEXT PRIMARY KEY,
+        clientId TEXT,
         client TEXT NOT NULL,
         adresse TEXT NOT NULL,
         latitude REAL,
@@ -83,6 +112,43 @@ class DatabaseHelper {
 
     await db.execute('CREATE INDEX idx_photos_visite ON photos (visiteId)');
     await db.execute('CREATE INDEX idx_checklist_visite ON checklist_reponses (visiteId)');
+    await db.execute('CREATE INDEX idx_visites_client ON visites (clientId)');
+  }
+
+  // ---------- Clients ----------
+
+  Future<void> insertClient(Client client) async {
+    final db = await database;
+    await db.insert('clients', client.toMap());
+  }
+
+  Future<void> updateClient(Client client) async {
+    final db = await database;
+    await db.update('clients', client.toMap(), where: 'id = ?', whereArgs: [client.id]);
+  }
+
+  Future<void> deleteClient(String id) async {
+    final db = await database;
+    await db.delete('clients', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Client>> getClients() async {
+    final db = await database;
+    final rows = await db.query('clients', orderBy: 'nom ASC');
+    return rows.map((r) => Client.fromMap(r)).toList();
+  }
+
+  Future<Client?> getClient(String id) async {
+    final db = await database;
+    final rows = await db.query('clients', where: 'id = ?', whereArgs: [id]);
+    if (rows.isEmpty) return null;
+    return Client.fromMap(rows.first);
+  }
+
+  Future<List<Visite>> getVisitesParClient(String clientId) async {
+    final db = await database;
+    final rows = await db.query('visites', where: 'clientId = ?', whereArgs: [clientId], orderBy: 'date DESC');
+    return rows.map((r) => Visite.fromMap(r)).toList();
   }
 
   // ---------- Visites ----------
@@ -104,8 +170,18 @@ class DatabaseHelper {
     await db.delete('visites', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<List<Visite>> getVisites() async {
+  Future<List<Visite>> getVisites({String? recherche}) async {
     final db = await database;
+    if (recherche != null && recherche.trim().isNotEmpty) {
+      final motif = '%${recherche.trim()}%';
+      final rows = await db.query(
+        'visites',
+        where: 'client LIKE ? OR adresse LIKE ?',
+        whereArgs: [motif, motif],
+        orderBy: 'date DESC',
+      );
+      return rows.map((r) => Visite.fromMap(r)).toList();
+    }
     final rows = await db.query('visites', orderBy: 'date DESC');
     return rows.map((r) => Visite.fromMap(r)).toList();
   }

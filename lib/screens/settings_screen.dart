@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data/checklist_repository.dart';
 import '../data/checklist_template.dart';
 import '../data/settings_service.dart';
+import '../services/backup_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,6 +19,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<ChecklistTemplate> _templates = [];
   final Map<String, TextEditingController> _controllersDistances = {};
   bool _chargement = true;
+  bool _sauvegardeEnCours = false;
+
+  Future<void> _lancerSauvegardeComplete() async {
+    setState(() => _sauvegardeEnCours = true);
+    try {
+      final fichier = await BackupService.exporterSauvegardeComplete();
+      await Share.shareXFiles(
+        [XFile(fichier.path)],
+        subject: 'Sauvegarde Visite PV & Batterie',
+        text: 'Sauvegarde complète de toutes les visites (données + photos)',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la sauvegarde : $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sauvegardeEnCours = false);
+    }
+  }
 
   @override
   void initState() {
@@ -80,6 +103,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   controller: _technicienController,
                   decoration: const InputDecoration(labelText: 'Technicien par défaut', border: OutlineInputBorder()),
                   onChanged: (v) => SettingsService.setNomDefautTechnicien(v),
+                ),
+                const SizedBox(height: 24),
+                Text('Sauvegarde', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Exportez toutes vos visites (données, checklists et photos) en une archive ZIP, "
+                          "à conserver ou transférer sur un autre appareil.",
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: _sauvegardeEnCours ? null : _lancerSauvegardeComplete,
+                          icon: _sauvegardeEnCours
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.backup_outlined),
+                          label: const Text('Exporter toutes les données (ZIP)'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Card(

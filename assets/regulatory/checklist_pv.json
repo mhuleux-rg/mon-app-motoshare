@@ -60,6 +60,20 @@
       ]
     },
     {
+      "id": "materiel_mesures",
+      "titre": "Matériel et mesures électriques",
+      "items": [
+        { "id": "pv_ref_modules", "label": "Référence / marque des modules", "type": "texte" },
+        { "id": "pv_nb_modules", "label": "Nombre de modules", "type": "nombre", "unite": "" },
+        { "id": "pv_ref_onduleurs", "label": "Référence / marque des onduleurs", "type": "texte" },
+        { "id": "pv_tension_circuit_ouvert", "label": "Tension en circuit ouvert (Voc) mesurée", "type": "nombre", "unite": "V" },
+        { "id": "pv_courant_court_circuit", "label": "Courant de court-circuit (Isc) mesuré", "type": "nombre", "unite": "A" },
+        { "id": "pv_resistance_isolement", "label": "Résistance d'isolement mesurée", "type": "nombre", "unite": "MΩ", "a_verifier": true },
+        { "id": "pv_schema_unifilaire_present", "label": "Schéma unifilaire présent et à jour sur site", "type": "case" },
+        { "id": "pv_attestation_consuel", "label": "Attestation Consuel disponible", "type": "case" }
+      ]
+    },
+    {
       "id": "environnement_sol",
       "titre": "Environnement (installation au sol uniquement)",
       "items": [

@@ -64,6 +64,20 @@
       ]
     },
     {
+      "id": "materiel_mesures",
+      "titre": "Matériel et mesures électriques",
+      "items": [
+        { "id": "bat_ref_pack", "label": "Référence / marque du pack batterie", "type": "texte" },
+        { "id": "bat_ref_bms", "label": "Référence du BMS (Battery Management System)", "type": "texte" },
+        { "id": "bat_ref_onduleur_hybride", "label": "Référence de l'onduleur / convertisseur associé", "type": "texte" },
+        { "id": "bat_tension_pack_mesuree", "label": "Tension du pack mesurée", "type": "nombre", "unite": "V" },
+        { "id": "bat_soc_mesure", "label": "État de charge (SOC) au moment de la visite", "type": "nombre", "unite": "%" },
+        { "id": "bat_resistance_isolement", "label": "Résistance d'isolement mesurée", "type": "nombre", "unite": "MΩ", "a_verifier": true },
+        { "id": "bat_firmware_bms_a_jour", "label": "Firmware du BMS à jour", "type": "case", "a_verifier": true },
+        { "id": "bat_historique_alarmes_consulte", "label": "Historique des alarmes/défauts du BMS consulté", "type": "case" }
+      ]
+    },
+    {
       "id": "ventilation_detection",
       "titre": "Ventilation et détection",
       "items": [
