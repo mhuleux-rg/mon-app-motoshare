@@ -1,3 +1,12 @@
+enum TypeMedia { photo, croquis }
+
+TypeMedia typeMediaFromString(String? value) {
+  return TypeMedia.values.firstWhere(
+    (e) => e.name == value,
+    orElse: () => TypeMedia.photo,
+  );
+}
+
 class PhotoVisite {
   final String id;
   final String visiteId;
@@ -6,6 +15,7 @@ class PhotoVisite {
   DateTime dateAjout;
   double? latitude;
   double? longitude;
+  TypeMedia type;
 
   PhotoVisite({
     required this.id,
@@ -15,6 +25,7 @@ class PhotoVisite {
     required this.dateAjout,
     this.latitude,
     this.longitude,
+    this.type = TypeMedia.photo,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +37,7 @@ class PhotoVisite {
       'dateAjout': dateAjout.toIso8601String(),
       'latitude': latitude,
       'longitude': longitude,
+      'type': type.name,
     };
   }
 
@@ -38,6 +50,7 @@ class PhotoVisite {
       dateAjout: DateTime.parse(map['dateAjout'] as String),
       latitude: map['latitude'] as double?,
       longitude: map['longitude'] as double?,
+      type: typeMediaFromString(map['type'] as String?),
     );
   }
 }

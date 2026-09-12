@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +9,7 @@ import 'package:uuid/uuid.dart';
 
 import '../db/database_helper.dart';
 import '../models/photo_visite.dart';
+import 'sketch_pad_screen.dart';
 
 class PhotosTab extends StatefulWidget {
   final String visiteId;
@@ -34,15 +36,20 @@ class _PhotosTabState extends State<PhotosTab> {
     });
   }
 
-  Future<void> _ajouterPhoto(ImageSource source) async {
-    final xfile = await _picker.pickImage(source: source, maxWidth: 1920, imageQuality: 85);
-    if (xfile == null) return;
-
+  Future<Directory> _dossierMedias() async {
     final dossierApp = await getApplicationDocumentsDirectory();
     final dossierVisite = Directory(p.join(dossierApp.path, 'photos', widget.visiteId));
     if (!await dossierVisite.exists()) {
       await dossierVisite.create(recursive: true);
     }
+    return dossierVisite;
+  }
+
+  Future<void> _ajouterPhoto(ImageSource source) async {
+    final xfile = await _picker.pickImage(source: source, maxWidth: 1920, imageQuality: 85);
+    if (xfile == null) return;
+
+    final dossierVisite = await _dossierMedias();
     final nomFichier = '${const Uuid().v4()}${p.extension(xfile.path)}';
     final chemin = p.join(dossierVisite.path, nomFichier);
     await File(xfile.path).copy(chemin);
@@ -52,33 +59,79 @@ class _PhotosTabState extends State<PhotosTab> {
       visiteId: widget.visiteId,
       cheminFichier: chemin,
       dateAjout: DateTime.now(),
+      type: TypeMedia.photo,
     );
     await DatabaseHelper.instance.insertPhoto(photo);
     _reload();
   }
 
+  Future<void> _ajouterCroquis() async {
+    final bytes = await Navigator.push<Uint8List?>(
+      context,
+      MaterialPageRoute(builder: (_) => const SketchPadScreen()),
+    );
+    if (bytes == null) return;
+
+    final dossierVisite = await _dossierMedias();
+    final nomFichier = '${const Uuid().v4()}.png';
+    final chemin = p.join(dossierVisite.path, nomFichier);
+    await File(chemin).writeAsBytes(bytes);
+
+    final croquis = PhotoVisite(
+      id: const Uuid().v4(),
+      visiteId: widget.visiteId,
+      cheminFichier: chemin,
+      legende: 'Croquis du site',
+      dateAjout: DateTime.now(),
+      type: TypeMedia.croquis,
+    );
+    await DatabaseHelper.instance.insertPhoto(croquis);
+    _reload();
+  }
+
   Future<void> _choisirSource() async {
-    final source = await showModalBottomSheet<ImageSource>(
+    final choix = await showModalBottomSheet<int>(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Prendre une photo'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+              child: Text('Ajouter au dossier de visite', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library),
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Prendre une photo'),
+              onTap: () => Navigator.pop(context, 0),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
               title: const Text('Choisir dans la galerie'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
+              onTap: () => Navigator.pop(context, 1),
+            ),
+            ListTile(
+              leading: const Icon(Icons.draw_outlined),
+              title: const Text('Dessiner un croquis'),
+              subtitle: const Text('Implantation, distances, accès...'),
+              onTap: () => Navigator.pop(context, 2),
             ),
           ],
         ),
       ),
     );
-    if (source != null) {
-      await _ajouterPhoto(source);
+    switch (choix) {
+      case 0:
+        await _ajouterPhoto(ImageSource.camera);
+        break;
+      case 1:
+        await _ajouterPhoto(ImageSource.gallery);
+        break;
+      case 2:
+        await _ajouterCroquis();
+        break;
     }
   }
 
@@ -87,7 +140,7 @@ class _PhotosTabState extends State<PhotosTab> {
     final resultat = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Légende de la photo'),
+        title: Text(photo.type == TypeMedia.croquis ? 'Légende du croquis' : 'Légende de la photo'),
         content: TextField(
           controller: controller,
           maxLines: 3,
@@ -125,14 +178,29 @@ class _PhotosTabState extends State<PhotosTab> {
           }
           final photos = snapshot.data!;
           if (photos.isEmpty) {
-            return const Center(child: Text('Aucune photo. Appuyez sur + pour en ajouter.'));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.photo_camera_outlined, size: 56, color: Colors.grey.shade400),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Aucune photo ni croquis.\nAppuyez sur + pour en ajouter.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
           return GridView.builder(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
               childAspectRatio: 0.85,
             ),
             itemCount: photos.length,
@@ -143,13 +211,40 @@ class _PhotosTabState extends State<PhotosTab> {
                 onLongPress: () => _supprimerPhoto(photo),
                 child: Card(
                   clipBehavior: Clip.antiAlias,
+                  elevation: 1.5,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   child: Column(
                     children: [
                       Expanded(
-                        child: Image.file(File(photo.cheminFichier), fit: BoxFit.cover, width: double.infinity),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.file(File(photo.cheminFichier), fit: BoxFit.cover),
+                            if (photo.type == TypeMedia.croquis)
+                              Positioned(
+                                top: 6,
+                                left: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.draw, size: 12, color: Colors.white),
+                                      SizedBox(width: 4),
+                                      Text('Croquis', style: TextStyle(color: Colors.white, fontSize: 10)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(6),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                         child: Text(
                           photo.legende.isEmpty ? 'Ajouter une légende' : photo.legende,
                           maxLines: 2,
@@ -165,9 +260,10 @@ class _PhotosTabState extends State<PhotosTab> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _choisirSource,
-        child: const Icon(Icons.add_a_photo),
+        icon: const Icon(Icons.add),
+        label: const Text('Ajouter'),
       ),
     );
   }

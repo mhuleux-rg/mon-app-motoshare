@@ -21,9 +21,16 @@ class DatabaseHelper {
     final path = join(dbPath, 'visite_pv.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute("ALTER TABLE photos ADD COLUMN type TEXT NOT NULL DEFAULT 'photo'");
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -51,6 +58,7 @@ class DatabaseHelper {
         dateAjout TEXT NOT NULL,
         latitude REAL,
         longitude REAL,
+        type TEXT NOT NULL DEFAULT 'photo',
         FOREIGN KEY (visiteId) REFERENCES visites (id) ON DELETE CASCADE
       )
     ''');

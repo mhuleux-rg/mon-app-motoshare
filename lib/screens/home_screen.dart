@@ -145,14 +145,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String _libellePourType(TypeInstallation type) {
+    switch (type) {
+      case TypeInstallation.photovoltaique:
+        return 'Photovoltaïque';
+      case TypeInstallation.batterie:
+        return 'Batterie';
+      case TypeInstallation.mixte:
+        return 'PV + Batterie';
+    }
+  }
+
+  Color _couleurPourType(BuildContext context, TypeInstallation type) {
+    switch (type) {
+      case TypeInstallation.photovoltaique:
+        return const Color(0xFF0E6E52);
+      case TypeInstallation.batterie:
+        return const Color(0xFFB2650A);
+      case TypeInstallation.mixte:
+        return const Color(0xFF2B5FA6);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Visites techniques PV & Batterie'),
+        title: const Text('Visites PV & Batterie'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -160,6 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: FutureBuilder<List<Visite>>(
@@ -176,37 +199,111 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.assignment_outlined, size: 64, color: Colors.grey),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Aucune visite pour le moment.\nAppuyez sur + pour créer votre première visite.',
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.solar_power_outlined, size: 48, color: Theme.of(context).colorScheme.primary),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Aucune visite pour le moment',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Appuyez sur "Nouvelle visite" pour démarrer.',
                       textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
                     ),
                   ],
                 ),
               ),
             );
           }
-          return ListView.separated(
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
             itemCount: visites.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final visite = visites[index];
-              return ListTile(
-                leading: CircleAvatar(child: Icon(_iconePourType(visite.type))),
-                title: Text(visite.client),
-                subtitle: Text('${visite.adresse}\n${_dateFormat.format(visite.date)}'),
-                isThreeLine: true,
-                trailing: visite.cloturee
-                    ? const Icon(Icons.check_circle, color: Colors.green)
-                    : const Icon(Icons.chevron_right),
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => VisiteDetailScreen(visiteId: visite.id)),
-                  );
-                  _reload();
-                },
+              final couleurType = _couleurPourType(context, visite.type);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => VisiteDetailScreen(visiteId: visite.id)),
+                      );
+                      _reload();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: couleurType.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(_iconePourType(visite.type), color: couleurType),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  visite.client,
+                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  visite.adresse,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: couleurType.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        _libellePourType(visite.type),
+                                        style: TextStyle(color: couleurType, fontSize: 11, fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _dateFormat.format(visite.date),
+                                      style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          visite.cloturee
+                              ? const Icon(Icons.check_circle, color: Color(0xFF0E6E52))
+                              : Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               );
             },
           );

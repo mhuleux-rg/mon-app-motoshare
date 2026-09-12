@@ -132,8 +132,27 @@ class _ChecklistTabState extends State<ChecklistTab> {
     );
 
     for (final section in template.sections) {
-      widgets.add(const SizedBox(height: 12));
-      widgets.add(Text(section.titre, style: Theme.of(context).textTheme.titleMedium));
+      widgets.add(const SizedBox(height: 16));
+      widgets.add(
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              section.titre,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      );
+      widgets.add(const SizedBox(height: 4));
       for (final item in section.items) {
         final reponse = _reponses[item.id]!;
         widgets.add(_buildItem(item, reponse));

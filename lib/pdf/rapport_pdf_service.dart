@@ -10,6 +10,7 @@ import '../data/checklist_repository.dart';
 import '../data/checklist_template.dart';
 import '../db/database_helper.dart';
 import '../models/checklist_item_reponse.dart';
+import '../models/photo_visite.dart';
 import '../models/visite.dart';
 
 class RapportPdfService {
@@ -62,7 +63,7 @@ class RapportPdfService {
           for (final template in templates) ..._sectionChecklist(template, reponsesParItem),
           pw.SizedBox(height: 16),
           if (photos.isNotEmpty) ...[
-            pw.Text('Photos', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text('Photos et croquis', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 8),
           ],
         ],
@@ -82,6 +83,10 @@ class RapportPdfService {
             children: [
               pw.Expanded(child: pw.Image(image, fit: pw.BoxFit.contain)),
               pw.SizedBox(height: 8),
+              pw.Text(
+                photo.type == TypeMedia.croquis ? 'Croquis' : 'Photo',
+                style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+              ),
               if (photo.legende.isNotEmpty) pw.Text(photo.legende, style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
             ],
           ),

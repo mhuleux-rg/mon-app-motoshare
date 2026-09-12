@@ -7,7 +7,9 @@
     "Arrêtés ministériels/préfectoraux applicables aux installations de stockage d'énergie par batteries (BESS)",
     "Fiche de sécurité et notice d'installation du fabricant de la batterie",
     "Référentiel du SDIS local (distances d'éloignement, accès, moyens de secours)",
-    "Norme UTE C15-712-3 (installations PV avec stockage)"
+    "Norme UTE C15-712-3 (installations PV avec stockage)",
+    "Étude géotechnique (norme NF P94-500, mission G) pour le dimensionnement des fondations d'un conteneur lourd",
+    "Prescriptions du gestionnaire de réseau (Enedis ou distributeur local) pour le raccordement BT/HTA"
   ],
   "sections": [
     {
@@ -18,6 +20,27 @@
         { "id": "bat_capacite_energie", "label": "Capacité énergétique totale", "type": "nombre", "unite": "kWh" },
         { "id": "bat_tension", "label": "Tension du système", "type": "nombre", "unite": "V" },
         { "id": "bat_localisation", "label": "Emplacement", "type": "choix", "options": ["Local technique dédié intérieur", "Local extérieur / container", "Garage", "Autre pièce du bâtiment"] }
+      ]
+    },
+    {
+      "id": "conteneur_infrastructure",
+      "titre": "Conteneur(s) BESS et infrastructure (installations lourdes)",
+      "items": [
+        { "id": "bat_est_conteneurise", "label": "Batterie(s) en conteneur(s) extérieur(s)", "type": "case" },
+        { "id": "bat_nombre_conteneurs", "label": "Nombre de conteneurs", "type": "nombre", "unite": "" },
+        { "id": "bat_poids_total_conteneur", "label": "Poids total par conteneur", "type": "nombre", "unite": "tonnes", "a_verifier": true },
+        { "id": "bat_dimensions_conteneur", "label": "Dimensions par conteneur (L x l x H)", "type": "texte" },
+        { "id": "bat_type_fondation", "label": "Type de fondation / support", "type": "choix", "options": ["Dalle béton armé", "Plots béton préfabriqués", "Longrines", "Autre / à définir"] },
+        { "id": "bat_dimensions_dalle", "label": "Dimensions de la dalle / fondation (L x l)", "type": "texte" },
+        { "id": "bat_epaisseur_dalle", "label": "Épaisseur de la dalle", "type": "nombre", "unite": "cm", "a_verifier": true },
+        { "id": "bat_etude_geotechnique", "label": "Étude géotechnique / de portance du sol réalisée", "type": "case", "a_verifier": true },
+        { "id": "bat_portance_fondation_verifiee", "label": "Portance de la fondation vérifiée pour la charge du conteneur (jusqu'à plusieurs dizaines de tonnes)", "type": "case", "a_verifier": true },
+        { "id": "bat_type_raccordement", "label": "Type de raccordement électrique", "type": "choix", "options": ["BT (Basse Tension)", "HTA (Haute Tension A)", "Mixte / à définir"] },
+        { "id": "bat_distance_poste_livraison", "label": "Distance au poste de livraison / comptage", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "bat_distance_transformateur", "label": "Distance au transformateur HTA/BT (si présent)", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "bat_largeur_voie_acces_pl", "label": "Largeur de la voie d'accès pour poids-lourd / convoi", "type": "nombre", "unite": "m", "a_verifier": true },
+        { "id": "bat_portance_voie_acces", "label": "Voie d'accès et aire de manœuvre dimensionnées pour convoi lourd (jusqu'à ~40 t)", "type": "case", "a_verifier": true },
+        { "id": "bat_zone_manutention_grue", "label": "Zone de manutention / grutage dégagée pour la pose ou la dépose du conteneur", "type": "case" }
       ]
     },
     {
