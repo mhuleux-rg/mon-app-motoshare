@@ -33,7 +33,7 @@ dependencies:
   flutter_riverpod: ^2.5.1
   google_fonts: ^6.2.1
   shared_preferences: ^2.2.3
-  archive: ^3.6.1
+  archive: ^4.0.9
 
 dev_dependencies:
   flutter_test:
