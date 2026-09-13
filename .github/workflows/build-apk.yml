@@ -66,4 +66,3 @@ jobs:
           body: "APK généré automatiquement depuis le commit ${{ github.sha }}. Téléchargez app-release.apk ci-dessous et installez-le directement sur votre téléphone."
           files: build/app/outputs/flutter-apk/app-release.apk
           prerelease: true
-          make_latest: true
