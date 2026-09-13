@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../db/database_helper.dart';
 import '../models/client.dart';
+import '../widgets/address_autocomplete_field.dart';
 import 'client_detail_screen.dart';
 
 class ClientsScreen extends StatefulWidget {
@@ -34,6 +35,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final adresseController = TextEditingController(text: client?.adresse ?? '');
     final telephoneController = TextEditingController(text: client?.telephone ?? '');
     final emailController = TextEditingController(text: client?.email ?? '');
+    double? latitude = client?.latitude;
+    double? longitude = client?.longitude;
 
     final confirme = await showDialog<bool>(
       context: context,
@@ -44,7 +47,16 @@ class _ClientsScreenState extends State<ClientsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(controller: nomController, decoration: const InputDecoration(labelText: 'Nom / Raison sociale')),
-              TextField(controller: adresseController, decoration: const InputDecoration(labelText: 'Adresse')),
+              const SizedBox(height: 8),
+              AddressAutocompleteField(
+                controller: adresseController,
+                labelText: 'Adresse',
+                onAdresseSelectionnee: (suggestion) {
+                  latitude = suggestion.latitude;
+                  longitude = suggestion.longitude;
+                },
+              ),
+              const SizedBox(height: 8),
               TextField(controller: telephoneController, decoration: const InputDecoration(labelText: 'Téléphone')),
               TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
             ],
@@ -64,6 +76,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
         id: const Uuid().v4(),
         nom: nomController.text.trim(),
         adresse: adresseController.text.trim(),
+        latitude: latitude,
+        longitude: longitude,
         telephone: telephoneController.text.trim().isEmpty ? null : telephoneController.text.trim(),
         email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
         dateCreation: DateTime.now(),
@@ -72,6 +86,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
     } else {
       client.nom = nomController.text.trim();
       client.adresse = adresseController.text.trim();
+      client.latitude = latitude;
+      client.longitude = longitude;
       client.telephone = telephoneController.text.trim().isEmpty ? null : telephoneController.text.trim();
       client.email = emailController.text.trim().isEmpty ? null : emailController.text.trim();
       await DatabaseHelper.instance.updateClient(client);

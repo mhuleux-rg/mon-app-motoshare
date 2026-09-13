@@ -22,7 +22,7 @@ class DatabaseHelper {
     final path = join(dbPath, 'visite_pv.db');
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -47,6 +47,10 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE visites ADD COLUMN clientId TEXT');
       await db.execute('CREATE INDEX idx_visites_client ON visites (clientId)');
     }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE clients ADD COLUMN latitude REAL');
+      await db.execute('ALTER TABLE clients ADD COLUMN longitude REAL');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -55,6 +59,8 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         nom TEXT NOT NULL,
         adresse TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
         telephone TEXT,
         email TEXT,
         notes TEXT,

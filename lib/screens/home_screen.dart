@@ -6,6 +6,8 @@ import '../data/settings_service.dart';
 import '../db/database_helper.dart';
 import '../models/client.dart';
 import '../models/visite.dart';
+import '../widgets/address_autocomplete_field.dart';
+import 'carte_screen.dart';
 import 'clients_screen.dart';
 import 'settings_screen.dart';
 import 'visite_detail_screen.dart';
@@ -66,6 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _creerVisite() async {
     String? clientIdSelectionne;
+    double? latitudeSuggestion;
+    double? longitudeSuggestion;
     final clientController = TextEditingController();
     final adresseController = TextEditingController();
     TypeInstallation type = TypeInstallation.photovoltaique;
@@ -92,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           if (client != null) {
                             clientController.text = client.nom;
                             adresseController.text = client.adresse;
+                            latitudeSuggestion = client.latitude;
+                            longitudeSuggestion = client.longitude;
                             setStateDialog(() => clientIdSelectionne = client.id);
                           }
                         },
@@ -104,10 +110,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: const InputDecoration(labelText: 'Client'),
                       onChanged: (_) => clientIdSelectionne = null,
                     ),
-                    TextField(
+                    AddressAutocompleteField(
                       controller: adresseController,
-                      decoration: const InputDecoration(labelText: 'Adresse du site'),
+                      labelText: 'Adresse du site',
+                      onAdresseSelectionnee: (suggestion) {
+                        latitudeSuggestion = suggestion.latitude;
+                        longitudeSuggestion = suggestion.longitude;
+                      },
                     ),
+                    const SizedBox(height: 4),
                     TextField(
                       controller: technicienController,
                       decoration: const InputDecoration(labelText: 'Technicien'),
@@ -168,6 +179,8 @@ class _HomeScreenState extends State<HomeScreen> {
       clientId: clientIdSelectionne,
       client: clientController.text.trim(),
       adresse: adresseController.text.trim(),
+      latitude: latitudeSuggestion,
+      longitude: longitudeSuggestion,
       type: type,
       date: DateTime.now(),
       nomTechnicien: technicienController.text.trim().isEmpty ? null : technicienController.text.trim(),
@@ -224,6 +237,16 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Visites PV & Batterie'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.map_outlined),
+            tooltip: 'Carte des visites',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CarteScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.people_outline),
             tooltip: 'Clients',
