@@ -59,10 +59,18 @@ jobs:
           retention-days: 90
 
       - name: Publier l'APK dans une Release (téléchargement direct, sans zip)
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: apk-latest
-          name: "Dernière build APK"
-          body: "APK généré automatiquement depuis le commit ${{ github.sha }}. Téléchargez app-release.apk ci-dessous et installez-le directement sur votre téléphone."
-          files: build/app/outputs/flutter-apk/app-release.apk
-          prerelease: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          NOTES="APK généré automatiquement depuis le commit ${{ github.sha }}. Téléchargez app-release.apk ci-dessous et installez-le directement sur votre téléphone."
+          if gh release view apk-latest --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release upload apk-latest build/app/outputs/flutter-apk/app-release.apk --repo "${{ github.repository }}" --clobber
+            gh release edit apk-latest --repo "${{ github.repository }}" --notes "$NOTES"
+          else
+            gh release create apk-latest build/app/outputs/flutter-apk/app-release.apk \
+              --repo "${{ github.repository }}" \
+              --title "Dernière build APK" \
+              --notes "$NOTES" \
+              --prerelease
+          fi
