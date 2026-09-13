@@ -63,11 +63,15 @@ Chaque push sur `main` ou une branche `claude/**` déclenche le workflow
 2. génère le dossier `android/`,
 3. ajoute les permissions,
 4. compile l'APK en mode release,
-5. le publie comme **artifact téléchargeable** sur la page du run (onglet *Actions*
-   du dépôt GitHub, section *Artifacts*).
+5. le publie à deux endroits :
+   - **Release GitHub** (recommandé pour installer sur un téléphone) : onglet
+     *Releases* du dépôt, tag `apk-latest` → téléchargement direct du fichier
+     `app-release.apk`, **sans zip à extraire** ;
+   - **Artifact** (onglet *Actions* du run, section *Artifacts*) : format zip,
+     plutôt destiné à un usage depuis un ordinateur.
 
-Téléchargez `visite-pv-batterie-apk.zip`, dézippez, puis transférez le fichier
-`app-release.apk` sur votre téléphone Android pour l'installer (autoriser
+Sur votre téléphone : ouvrez la page *Releases* du dépôt dans un navigateur,
+téléchargez `app-release.apk`, puis appuyez dessus pour l'installer (autoriser
 l'installation d'applications hors Play Store si demandé).
 
 ### Option 2 : En local

@@ -7,6 +7,9 @@ on:
       - "claude/**"
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -54,3 +57,13 @@ jobs:
           name: visite-pv-batterie-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 90
+
+      - name: Publier l'APK dans une Release (téléchargement direct, sans zip)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: "Dernière build APK"
+          body: "APK généré automatiquement depuis le commit ${{ github.sha }}. Téléchargez app-release.apk ci-dessous et installez-le directement sur votre téléphone."
+          files: build/app/outputs/flutter-apk/app-release.apk
+          prerelease: true
+          make_latest: true
