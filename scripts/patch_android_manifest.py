@@ -16,6 +16,7 @@ ET.register_namespace("android", ANDROID_NS)
 MANIFEST_PATH = Path(__file__).resolve().parent.parent / "android" / "app" / "src" / "main" / "AndroidManifest.xml"
 
 PERMISSIONS = [
+    "android.permission.INTERNET",
     "android.permission.CAMERA",
     "android.permission.ACCESS_FINE_LOCATION",
     "android.permission.ACCESS_COARSE_LOCATION",
