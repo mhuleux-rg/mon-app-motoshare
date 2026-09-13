@@ -17,6 +17,9 @@ class CarteScreen extends StatefulWidget {
 }
 
 class _CarteScreenState extends State<CarteScreen> {
+  static const _centreParDefaut = LatLng(46.6, 2.4); // Centre approximatif de la France
+  final MapController _controleurCarte = MapController();
+
   List<Visite> _visites = [];
   bool _chargement = true;
 
@@ -32,6 +35,14 @@ class _CarteScreenState extends State<CarteScreen> {
       _visites = toutes.where((v) => v.latitude != null && v.longitude != null).toList();
       _chargement = false;
     });
+    if (_visites.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _controleurCarte.move(
+          LatLng(_visites.first.latitude!, _visites.first.longitude!),
+          _visites.length > 1 ? 6 : 13,
+        );
+      });
+    }
   }
 
   Color _couleurPourVisite(Visite visite) {
@@ -63,76 +74,85 @@ class _CarteScreenState extends State<CarteScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (_visites.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Carte des visites')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.map_outlined, size: 56, color: Colors.grey.shade400),
-                const SizedBox(height: 12),
-                const Text(
-                  "Aucune visite géolocalisée pour l'instant.\n"
-                  "Choisissez une adresse suggérée ou capturez la position GPS d'une visite pour la voir apparaître ici.",
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    final centre = LatLng(_visites.first.latitude!, _visites.first.longitude!);
-
     return Scaffold(
-      appBar: AppBar(title: Text('Carte des visites (${_visites.length})')),
-      body: FlutterMap(
-        options: MapOptions(
-          initialCenter: centre,
-          initialZoom: _visites.length > 1 ? 6 : 13,
-        ),
+      appBar: AppBar(
+        title: Text(_visites.isEmpty ? 'Carte des visites' : 'Carte des visites (${_visites.length})'),
+      ),
+      body: Stack(
         children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.motovisite.visite_pv',
-          ),
-          MarkerLayer(
-            markers: [
-              for (final visite in _visites)
-                Marker(
-                  point: LatLng(visite.latitude!, visite.longitude!),
-                  width: 46,
-                  height: 46,
-                  child: GestureDetector(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => VisiteDetailScreen(visiteId: visite.id)),
-                      );
-                      _charger();
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _couleurPourVisite(visite),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+          FlutterMap(
+            mapController: _controleurCarte,
+            options: const MapOptions(
+              initialCenter: _centreParDefaut,
+              initialZoom: 5,
+              minZoom: 3,
+              maxZoom: 18,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.motovisite.visite_pv',
+              ),
+              MarkerLayer(
+                markers: [
+                  for (final visite in _visites)
+                    Marker(
+                      point: LatLng(visite.latitude!, visite.longitude!),
+                      width: 46,
+                      height: 46,
+                      child: GestureDetector(
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => VisiteDetailScreen(visiteId: visite.id)),
+                          );
+                          _charger();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _couleurPourVisite(visite),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                          ),
+                          child: Icon(_iconePourVisite(visite), color: Colors.white, size: 22),
+                        ),
                       ),
-                      child: Icon(_iconePourVisite(visite), color: Colors.white, size: 22),
                     ),
+                ],
+              ),
+              const RichAttributionWidget(
+                attributions: [
+                  TextSourceAttribution('© OpenStreetMap contributors'),
+                ],
+              ),
+            ],
+          ),
+          if (_visites.isEmpty)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.grey.shade600),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          "Aucune visite géolocalisée pour l'instant. Choisissez une adresse suggérée "
+                          "(une liste apparaît sous le champ pendant la saisie) ou capturez la position GPS "
+                          "d'une visite pour la voir apparaître ici.",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          ),
-          const RichAttributionWidget(
-            attributions: [
-              TextSourceAttribution('© OpenStreetMap contributors'),
-            ],
-          ),
+              ),
+            ),
         ],
       ),
     );

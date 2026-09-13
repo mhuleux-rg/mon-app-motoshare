@@ -12,11 +12,17 @@ class AddressAutocompleteField extends StatefulWidget {
   final String labelText;
   final void Function(SuggestionAdresse suggestion)? onAdresseSelectionnee;
 
+  /// Appelé à chaque frappe (texte libre, sans sélection de suggestion) :
+  /// utile pour sauvegarder la saisie même si l'utilisateur ne choisit
+  /// aucune suggestion (dans ce cas, aucune coordonnée n'est renseignée).
+  final void Function(String texte)? onTexteChange;
+
   const AddressAutocompleteField({
     super.key,
     required this.controller,
     this.labelText = 'Adresse',
     this.onAdresseSelectionnee,
+    this.onTexteChange,
   });
 
   @override
@@ -29,6 +35,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
   bool _recherche = false;
 
   void _onChanged(String valeur) {
+    widget.onTexteChange?.call(valeur);
     _debounce?.cancel();
     if (valeur.trim().length < 3) {
       setState(() {

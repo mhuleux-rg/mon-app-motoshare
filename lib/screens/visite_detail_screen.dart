@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../db/database_helper.dart';
 import '../models/visite.dart';
+import '../widgets/address_autocomplete_field.dart';
 import '../widgets/checklist_tab.dart';
 import '../widgets/croquis_tab.dart';
 import '../widgets/photos_tab.dart';
@@ -206,13 +207,19 @@ class _InfosTabState extends State<_InfosTab> {
             },
           ),
           const SizedBox(height: 12),
-          TextField(
+          AddressAutocompleteField(
             controller: _adresseController,
-            decoration: const InputDecoration(labelText: 'Adresse du site', border: OutlineInputBorder()),
-            maxLines: 2,
-            onChanged: (v) {
-              visite.adresse = v;
+            labelText: 'Adresse du site',
+            onTexteChange: (texte) {
+              visite.adresse = texte;
               widget.onSauvegarder();
+            },
+            onAdresseSelectionnee: (suggestion) {
+              visite.adresse = suggestion.libelle;
+              visite.latitude = suggestion.latitude;
+              visite.longitude = suggestion.longitude;
+              widget.onSauvegarder();
+              setState(() {});
             },
           ),
           const SizedBox(height: 12),
