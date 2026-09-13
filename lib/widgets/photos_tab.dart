@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,7 +8,6 @@ import 'package:uuid/uuid.dart';
 
 import '../db/database_helper.dart';
 import '../models/photo_visite.dart';
-import 'sketch_pad_screen.dart';
 
 class PhotosTab extends StatefulWidget {
   final String visiteId;
@@ -32,24 +30,24 @@ class _PhotosTabState extends State<PhotosTab> {
 
   void _reload() {
     setState(() {
-      _futurePhotos = DatabaseHelper.instance.getPhotos(widget.visiteId);
+      _futurePhotos = _chargerPhotos();
     });
   }
 
-  Future<Directory> _dossierMedias() async {
-    final dossierApp = await getApplicationDocumentsDirectory();
-    final dossierVisite = Directory(p.join(dossierApp.path, 'photos', widget.visiteId));
-    if (!await dossierVisite.exists()) {
-      await dossierVisite.create(recursive: true);
-    }
-    return dossierVisite;
+  Future<List<PhotoVisite>> _chargerPhotos() async {
+    final tous = await DatabaseHelper.instance.getPhotos(widget.visiteId);
+    return tous.where((m) => m.type == TypeMedia.photo).toList();
   }
 
   Future<void> _ajouterPhoto(ImageSource source) async {
     final xfile = await _picker.pickImage(source: source, maxWidth: 1920, imageQuality: 85);
     if (xfile == null) return;
 
-    final dossierVisite = await _dossierMedias();
+    final dossierApp = await getApplicationDocumentsDirectory();
+    final dossierVisite = Directory(p.join(dossierApp.path, 'photos', widget.visiteId));
+    if (!await dossierVisite.exists()) {
+      await dossierVisite.create(recursive: true);
+    }
     final nomFichier = '${const Uuid().v4()}${p.extension(xfile.path)}';
     final chemin = p.join(dossierVisite.path, nomFichier);
     await File(xfile.path).copy(chemin);
@@ -65,32 +63,8 @@ class _PhotosTabState extends State<PhotosTab> {
     _reload();
   }
 
-  Future<void> _ajouterCroquis() async {
-    final bytes = await Navigator.push<Uint8List?>(
-      context,
-      MaterialPageRoute(builder: (_) => const SketchPadScreen()),
-    );
-    if (bytes == null) return;
-
-    final dossierVisite = await _dossierMedias();
-    final nomFichier = '${const Uuid().v4()}.png';
-    final chemin = p.join(dossierVisite.path, nomFichier);
-    await File(chemin).writeAsBytes(bytes);
-
-    final croquis = PhotoVisite(
-      id: const Uuid().v4(),
-      visiteId: widget.visiteId,
-      cheminFichier: chemin,
-      legende: 'Croquis du site',
-      dateAjout: DateTime.now(),
-      type: TypeMedia.croquis,
-    );
-    await DatabaseHelper.instance.insertPhoto(croquis);
-    _reload();
-  }
-
   Future<void> _choisirSource() async {
-    final choix = await showModalBottomSheet<int>(
+    final source = await showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -98,40 +72,22 @@ class _PhotosTabState extends State<PhotosTab> {
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-              child: Text('Ajouter au dossier de visite', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
               title: const Text('Prendre une photo'),
-              onTap: () => Navigator.pop(context, 0),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
               title: const Text('Choisir dans la galerie'),
-              onTap: () => Navigator.pop(context, 1),
-            ),
-            ListTile(
-              leading: const Icon(Icons.draw_outlined),
-              title: const Text('Dessiner un croquis'),
-              subtitle: const Text('Implantation, distances, accès...'),
-              onTap: () => Navigator.pop(context, 2),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
           ],
         ),
       ),
     );
-    switch (choix) {
-      case 0:
-        await _ajouterPhoto(ImageSource.camera);
-        break;
-      case 1:
-        await _ajouterPhoto(ImageSource.gallery);
-        break;
-      case 2:
-        await _ajouterCroquis();
-        break;
+    if (source != null) {
+      await _ajouterPhoto(source);
     }
   }
 
@@ -140,7 +96,7 @@ class _PhotosTabState extends State<PhotosTab> {
     final resultat = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(photo.type == TypeMedia.croquis ? 'Légende du croquis' : 'Légende de la photo'),
+        title: const Text('Légende de la photo'),
         content: TextField(
           controller: controller,
           maxLines: 3,
@@ -187,7 +143,7 @@ class _PhotosTabState extends State<PhotosTab> {
                     Icon(Icons.photo_camera_outlined, size: 56, color: Colors.grey.shade400),
                     const SizedBox(height: 12),
                     const Text(
-                      'Aucune photo ni croquis.\nAppuyez sur + pour en ajouter.',
+                      'Aucune photo.\nAppuyez sur + pour en ajouter.',
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -196,7 +152,7 @@ class _PhotosTabState extends State<PhotosTab> {
             );
           }
           return GridView.builder(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 90),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 10,
@@ -216,32 +172,7 @@ class _PhotosTabState extends State<PhotosTab> {
                   child: Column(
                     children: [
                       Expanded(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.file(File(photo.cheminFichier), fit: BoxFit.cover),
-                            if (photo.type == TypeMedia.croquis)
-                              Positioned(
-                                top: 6,
-                                left: 6,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.draw, size: 12, color: Colors.white),
-                                      SizedBox(width: 4),
-                                      Text('Croquis', style: TextStyle(color: Colors.white, fontSize: 10)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
+                        child: Image.file(File(photo.cheminFichier), fit: BoxFit.cover, width: double.infinity),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -262,8 +193,8 @@ class _PhotosTabState extends State<PhotosTab> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _choisirSource,
-        icon: const Icon(Icons.add),
-        label: const Text('Ajouter'),
+        icon: const Icon(Icons.add_a_photo_outlined),
+        label: const Text('Photo'),
       ),
     );
   }

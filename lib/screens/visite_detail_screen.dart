@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../db/database_helper.dart';
 import '../models/visite.dart';
 import '../widgets/checklist_tab.dart';
+import '../widgets/croquis_tab.dart';
 import '../widgets/photos_tab.dart';
 import '../widgets/rapport_tab.dart';
 
@@ -107,7 +108,7 @@ class _VisiteDetailScreenState extends State<VisiteDetailScreen> {
     }
 
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: Text(_visite!.client),
@@ -120,6 +121,7 @@ class _VisiteDetailScreenState extends State<VisiteDetailScreen> {
             tabs: [
               Tab(icon: Icon(Icons.info_outline), text: 'Infos'),
               Tab(icon: Icon(Icons.photo_camera_outlined), text: 'Photos'),
+              Tab(icon: Icon(Icons.draw_outlined), text: 'Croquis'),
               Tab(icon: Icon(Icons.checklist), text: 'Checklist'),
               Tab(icon: Icon(Icons.picture_as_pdf_outlined), text: 'Rapport'),
             ],
@@ -134,6 +136,7 @@ class _VisiteDetailScreenState extends State<VisiteDetailScreen> {
               onCapturerGps: _capturerGps,
             ),
             PhotosTab(visiteId: _visite!.id),
+            CroquisTab(visiteId: _visite!.id),
             ChecklistTab(visite: _visite!),
             RapportTab(visite: _visite!),
           ],
